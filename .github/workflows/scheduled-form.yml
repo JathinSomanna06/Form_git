@@ -1,0 +1,36 @@
+name: Scheduled Form Submit
+
+on:
+  schedule:
+    # Runs at 20:00 UTC, Monday - Saturday (adjust to your timezone as needed)
+    - cron: '0 20 * * 1-6'
+  workflow_dispatch: {}
+
+jobs:
+  run-form:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install system deps for Puppeteer (safety)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates fonts-liberation libatk-bridge2.0-0 libatk1.0-0 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 xvfb libasound2 libxss1
+
+      - name: Install Node dependencies
+        run: |
+          cd WorkLog_Submission-main
+          npm ci
+
+      - name: Run form script (HEADLESS=true)
+        env:
+          HEADLESS: 'true'
+        run: |
+          cd WorkLog_Submission-main
+          node index.js
